@@ -1,0 +1,19 @@
+[tools]
+python = "3.12"
+uv = "latest"
+ruff = "latest"
+
+[tasks.setup]
+run = "./scripts/setup.sh"
+
+[tasks.build-sd]
+description = "Build stable-diffusion.cpp"
+run = "./scripts/build-sd.sh ~/.local/bin"
+
+[tasks.install]
+description = "Install python dependencies"
+run = "uv sync"
+
+[tasks.dev]
+description = "Run the FastAPI App"
+run = "uv run uvicorn app.main:app --reload --host 0.0.0.0 --port 8000"

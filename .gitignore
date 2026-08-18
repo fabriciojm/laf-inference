@@ -1,0 +1,39 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+
+# Environment
+.env
+.env.*
+
+# Outputs / generated artifacts
+outputs/
+output/
+*.png
+*.jpg
+*.jpeg
+
+# Model files (keep models outside git)
+models/
+*.safetensors
+*.gguf
+*.ckpt
+
+# Build artifacts
+build/
+dist/
+*.o
+*.so
+
+# Stable diffusion / external tools
+stable-diffusion.cpp/
+
+# IDE
+.vscode/
+.idea/
+.cursor/
+
+# OS
+.DS_Store

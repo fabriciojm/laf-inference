@@ -1,0 +1,18 @@
+{
+  "build": {
+    "context": "..",
+    "dockerfile": "Dockerfile"
+  },
+  "mounts": [
+    "source=/home/fabricio/ai/image,target=/host-ai-image,type=bind"
+  ],
+  "containerEnv": {
+    "SD_CLI": "/home/vscode/.local/bin/sd-cli",
+    "MODEL_PATH": "/host-ai-image/models/sd-turbo/sd_turbo.safetensors",
+    "OUTPUT_DIR": "/workspaces/laf-inference/outputs"
+  },
+  "forwardPorts": [
+    8000
+  ],
+  "postCreateCommand": "mise run setup && pip install -r requirements.txt"
+}

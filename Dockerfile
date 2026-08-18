@@ -18,6 +18,8 @@ RUN chmod +x /tmp/build-sd.sh && \
 # ---- runtime ----
 FROM python:3.12-slim
 
+LABEL org.opencontainers.image.source="https://github.com/fabriciojm/laf-inference"
+
 RUN apt-get update && apt-get install -y \
     libopenblas0 \
     libgomp1 \

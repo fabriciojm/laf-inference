@@ -19,6 +19,8 @@ RUN chmod +x /tmp/build-sd.sh && \
 FROM python:3.12-slim
 
 LABEL org.opencontainers.image.source="https://github.com/fabriciojm/laf-inference"
+LABEL org.opencontainers.image.description="FastAPI inference worker using stable-diffusion.cpp"
+LABEL org.opencontainers.image.licenses="MIT"
 
 RUN apt-get update && apt-get install -y \
     libopenblas0 \

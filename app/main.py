@@ -12,7 +12,6 @@ import os
 SD_CLI = Path(os.getenv("SD_CLI", "sd-cli"))
 MODEL_PATH = Path(os.getenv("MODEL_PATH", "/models/sd-turbo/sd_turbo.safetensors"))
 OUTPUT_DIR = Path(os.getenv("OUTPUT_DIR", "/output"))
-INFERENCE_BASE_URL = os.getenv("INFERENCE_BASE_URL", "http://guama:8000")
 
 OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
 
@@ -34,7 +33,6 @@ class GenerateResponse(BaseModel):
     message: str
 
     image_id: str | None = None
-    image_url: str | None = None
 
     error: str | None = None
 
@@ -113,25 +111,19 @@ def generate(req: GenerateRequest) -> GenerateResponse:
         success = True,
         message = "image generation succeeded",
         image_id=image_id,
-        image_url=f"{INFERENCE_BASE_URL}/images/{image_id}",
     )
 
 @app.get("/images/{image_id}")
-async def get_image(image_id: str):
-    inference_url = (
-        f"{INFERENCE_BASE_URL}/images/{image_id}"
-    )
+def get_image(image_id: str) -> FileResponse:
+    image_path = OUTPUT_DIR / f"{image_id}.png"
 
-    async with httpx.AsyncClient() as client:
-        response = await client.get(inference_url)
-
-    if response.status_code != 200:
+    if not image_path.exists():
         raise HTTPException(
             status_code=404,
             detail="image not found",
         )
 
-    return StreamingResponse(
-        iter([response.content]),
+    return FileResponse(
+        image_path,
         media_type="image/png",
     )

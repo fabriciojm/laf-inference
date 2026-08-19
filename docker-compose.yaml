@@ -17,7 +17,7 @@ services:
 
   laf-inference:
     restart: unless-stopped
-    image: ghcr.io/fabriciojm/laf-inference:v0.1.1
+    image: ghcr.io/fabriciojm/laf-inference:v0.1.2
     depends_on:
       model-downloader:
         condition: service_completed_successfully

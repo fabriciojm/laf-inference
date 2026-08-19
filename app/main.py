@@ -3,14 +3,16 @@ from uuid import uuid4
 import subprocess
 
 from fastapi import FastAPI, HTTPException
-from fastapi.responses import FileResponse
+import httpx
+from fastapi.responses import StreamingResponse
 from pydantic import BaseModel, Field
 
 import os
 
 SD_CLI = Path(os.getenv("SD_CLI", "sd-cli"))
-MODEL_PATH = Path(os.getenv("MODEL_PATH", "/models/sd-turbo/sd_turbo.safetensors",))
-OUTPUT_DIR = Path(os.getenv("OUTPUT_DIR", "/output",))
+MODEL_PATH = Path(os.getenv("MODEL_PATH", "/models/sd-turbo/sd_turbo.safetensors"))
+OUTPUT_DIR = Path(os.getenv("OUTPUT_DIR", "/output"))
+INFERENCE_BASE_URL = os.getenv("INFERENCE_BASE_URL", "http://guama:8000")
 
 OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
 
@@ -28,9 +30,13 @@ class GenerateRequest(BaseModel):
 
 
 class GenerateResponse(BaseModel):
-    image_id: str
-    image_path: str
-    image_url: str
+    success: bool
+    message: str
+
+    image_id: str | None = None
+    image_url: str | None = None
+
+    error: str | None = None
 
 
 @app.on_event("startup")
@@ -88,29 +94,44 @@ def generate(req: GenerateRequest) -> GenerateResponse:
         raise HTTPException(
             status_code=500,
             detail={
+                "success": False,
                 "message": "image generation failed",
-                "stderr": exc.stderr,
-                "stdout": exc.stdout,
+                "error": str(exc),
             },
         ) from exc
     except subprocess.TimeoutExpired as exc:
         raise HTTPException(
             status_code=504,
-            detail="image generation timed out",
+            detail={
+                "success": False,
+                "message": "image generation timed out",
+                "error": str(exc),
+            }
         ) from exc
 
     return GenerateResponse(
+        success = True,
+        message = "image generation succeeded",
         image_id=image_id,
-        image_path=str(output_path),
-        image_url=f"/images/{image_id}",
+        image_url=f"{INFERENCE_BASE_URL}/images/{image_id}",
     )
 
-
 @app.get("/images/{image_id}")
-def get_image(image_id: str) -> FileResponse:
-    image_path = OUTPUT_DIR / f"{image_id}.png"
+async def get_image(image_id: str):
+    inference_url = (
+        f"{INFERENCE_BASE_URL}/images/{image_id}"
+    )
 
-    if not image_path.exists():
-        raise HTTPException(status_code=404, detail="image not found")
+    async with httpx.AsyncClient() as client:
+        response = await client.get(inference_url)
 
-    return FileResponse(image_path, media_type="image/png")
+    if response.status_code != 200:
+        raise HTTPException(
+            status_code=404,
+            detail="image not found",
+        )
+
+    return StreamingResponse(
+        iter([response.content]),
+        media_type="image/png",
+    )

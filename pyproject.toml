@@ -3,4 +3,9 @@ name = "laf-inference"
 version = "0.1.0"
 description = "project"
 requires-python = ">=3.12"
-dependencies = ["fastapi", "uvicorn[standard]", "pydantic"]
+dependencies = [
+    "fastapi",
+    "uvicorn[standard]",
+    "pydantic",
+    "httpx>=0.28.1",
+]

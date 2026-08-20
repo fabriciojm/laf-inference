@@ -4,7 +4,7 @@ import subprocess
 
 from fastapi import FastAPI, HTTPException
 import httpx
-from fastapi.responses import StreamingResponse
+from fastapi.responses import FileResponse
 from pydantic import BaseModel, Field
 
 import os
